@@ -2,6 +2,7 @@ require 'oystercard'
 
 describe Oystercard do
     subject(:oystercard) {described_class.new}
+    let(:station) { double :station }
 
     it "oyster card has 0 as default value" do 
         expect(oystercard.balance).to eq(0)
@@ -37,10 +38,8 @@ describe Oystercard do
 
   describe "#touch_in" do 
 
-    it { is_expected.to respond_to(:touch_in) }
-
     it "Should raise error when you try to touch in with balance less than min fare" do
-      expect{ subject.touch_in }.to raise_error("Balance too low")
+      expect{ subject.touch_in(station) }.to raise_error("Balance too low")
     end 
   end 
 
@@ -50,13 +49,13 @@ describe Oystercard do
     it { is_expected.to respond_to(:touch_out) }
 
     it "In journey to return false after #touch_out" do
-    subject.touch_in
+    subject.touch_in(station)
     subject.touch_out
     expect(subject.in_journey).to eq(false)
     end 
 
     it "deducts money from card once touch_out" do 
-      subject.touch_in
+      subject.touch_in(station)
       expect{subject.touch_out}.to change{subject.balance}.by(-Oystercard::MINIMUM_FARE)
   end 
 
@@ -71,8 +70,22 @@ describe Oystercard do
    it { is_expected.to respond_to(:in_journey) }
 
    it "In journey is set to true after #touch_in" do
-    subject.touch_in
+    subject.touch_in(station)
     expect(subject.in_journey).to eq(true)
+  end 
+end 
+
+describe "entry_station" do
+  before(:each) {subject.top_up(Oystercard::MINIMUM_FARE)}
+  before(:each) { subject.touch_in(station) }
+
+  it 'Should track what the entry station is after touch in' do
+    expect(subject.entry_station).to eq(station)
+  end 
+
+  it 'After touching out entry station should return nil' do
+    subject.touch_out
+    expect(subject.entry_station).to eq(nil)
   end 
 end 
 
