@@ -3,6 +3,7 @@ require 'oystercard'
 describe Oystercard do
     subject(:oystercard) {described_class.new}
     let(:station) { double :station }
+    let(:exit_station) {double :exit_station}
 
     it "oyster card has 0 as default value" do 
         expect(oystercard.balance).to eq(0)
@@ -50,17 +51,17 @@ describe Oystercard do
 
     it "In journey to return false after #touch_out" do
     subject.touch_in(station)
-    subject.touch_out
+    subject.touch_out(station)
     expect(subject.in_journey).to eq(false)
     end 
 
     it "deducts money from card once touch_out" do 
       subject.touch_in(station)
-      expect{subject.touch_out}.to change{subject.balance}.by(-Oystercard::MINIMUM_FARE)
+      expect{subject.touch_out(station)}.to change{subject.balance}.by(-Oystercard::MINIMUM_FARE)
   end 
 
     it "Should be unable to touch out if not on a journey" do
-    expect{ subject.touch_out }.to raise_error("Please touch in first") 
+    expect{ subject.touch_out(station) }.to raise_error("Please touch in first") 
     end 
   end 
 
@@ -84,8 +85,22 @@ describe "entry_station" do
   end 
 
   it 'After touching out entry station should return nil' do
-    subject.touch_out
+    subject.touch_out(station)
     expect(subject.entry_station).to eq(nil)
+  end 
+end 
+
+describe "journey" do
+  before(:each) {subject.top_up(Oystercard::MINIMUM_FARE)}
+
+  it "A new card should have a empty list of journeys" do
+    expect(subject.journey).to eq([])
+  end 
+
+  it "A completed journey should be storedin journey" do
+    subject.touch_in(station)
+    subject.touch_out(exit_station)
+    expect(subject.journey[0]).to eq({"entrystation" => station, "exitstation" => exit_station})
   end 
 end 
 
