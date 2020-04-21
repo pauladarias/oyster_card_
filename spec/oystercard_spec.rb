@@ -38,9 +38,14 @@ describe Oystercard do
   describe "#touch_in" do 
 
     it { is_expected.to respond_to(:touch_in) }
+
+    it "Should raise error when you try to touch in with balance less than min fare" do
+      expect{ subject.touch_in }.to raise_error("Balance too low")
+    end 
   end 
 
   describe "#touch_out" do 
+  before(:each) {subject.top_up(Oystercard::MINIMUM_FARE)}
 
     it { is_expected.to respond_to(:touch_out) }
 
@@ -52,6 +57,7 @@ describe Oystercard do
   end 
 
   describe "in_journey" do
+    before(:each) {subject.top_up(Oystercard::MINIMUM_FARE)}
    it { is_expected.to respond_to(:in_journey) }
 
    it "In journey is set to true after #touch_in" do
